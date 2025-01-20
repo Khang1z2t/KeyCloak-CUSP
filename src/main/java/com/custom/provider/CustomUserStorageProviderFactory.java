@@ -14,7 +14,7 @@ import java.sql.SQLException;
 public class CustomUserStorageProviderFactory implements UserStorageProviderFactory<CustomUserStorageProvider> {
     private Connection connection;
     private static final Logger logger = LoggerFactory.getLogger(CustomUserStorageProviderFactory.class);
-    private static final String URL = "jdbc:postgresql://host.docker.internal:6543/custom-provider";
+    private static final String URL = "jdbc:postgresql://host.docker.internal:2345/provider_db";
     private static final String USER = "postgres";
     private static final String PASSWORD = "12345";
 

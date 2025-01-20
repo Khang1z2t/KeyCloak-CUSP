@@ -1,6 +1,5 @@
 package com.custom.provider;
 
-import at.favre.lib.crypto.bcrypt.BCrypt;
 import com.custom.entity.User;
 import com.custom.entity.UserAdapter;
 import org.keycloak.component.ComponentModel;
@@ -16,6 +15,7 @@ import org.keycloak.storage.user.UserQueryProvider;
 import org.keycloak.storage.user.UserRegistrationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -36,7 +36,7 @@ public class CustomUserStorageProvider implements UserStorageProvider,
     private KeycloakSession keycloakSession;
     private Connection connection;
 
-//    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
 
     public void setModel(ComponentModel componentModel) {
         this.componentModel = componentModel;
@@ -114,6 +114,11 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             return null;
         }
 
+        if (!isConnectionValid()) {
+            logger.error("Database connection is closed or invalid.");
+            return null;
+        }
+
         String query = "SELECT * FROM users WHERE id = ?";
         try (PreparedStatement stmt = connection.prepareStatement(query)) {
             stmt.setLong(1, persistenceId);
@@ -131,6 +136,13 @@ public class CustomUserStorageProvider implements UserStorageProvider,
         return null;
     }
 
+    private boolean isConnectionValid() {
+        try {
+            return connection != null && !connection.isClosed() && connection.isValid(2);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
     @Override
     public UserModel addUser(RealmModel realmModel, String username) {
         logger.info("Attempting to add user with username: {}", username);
@@ -186,15 +198,6 @@ public class CustomUserStorageProvider implements UserStorageProvider,
         return false;
     }
 
-//    @Override
-//    public boolean supportsCredentialType(String credentialType) {
-//        return "password".equals(credentialType);
-//    }
-//
-//    @Override
-//    public boolean isConfiguredFor(RealmModel realm, UserModel user, String credentialType) {
-//        return supportsCredentialType(credentialType);
-//    }
 
     @Override
     public boolean isValid(RealmModel realm, UserModel user, CredentialInput credentialInput) {
@@ -210,8 +213,8 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
                 logger.info("storedPassword: ", storedPassword);
-//                boolean isValid = passwordEncoder.matches(credentialInput.getChallengeResponse(), storedPassword);
-//                logger.info("Credential validation result for user {}: {}", user.getUsername(), isValid);
+                boolean isValid = passwordEncoder.matches(credentialInput.getChallengeResponse(), storedPassword);
+                logger.info("Credential validation result for user {}: {}", user.getUsername(), isValid);
                 return true;
             } else {
                 logger.warn("No password found for user: {}", user.getUsername());
@@ -282,11 +285,11 @@ public class CustomUserStorageProvider implements UserStorageProvider,
     public boolean updateCredential(RealmModel realm, UserModel user, CredentialInput input) {
         if (input instanceof UserCredentialModel && input.getType().equals(CredentialModel.PASSWORD)) {
             String newPassword = ((UserCredentialModel) input).getValue();
-//            String hashedPassword = passwordEncoder.encode(newPassword);
+            String hashedPassword = passwordEncoder.encode(newPassword);
 
             String query = "UPDATE users SET password = ? WHERE username = ?";
             try (PreparedStatement stmt = connection.prepareStatement(query)) {
-//                stmt.setString(1, hashedPassword);
+                stmt.setString(1, hashedPassword);
                 stmt.setString(2, user.getUsername());
                 int rowsUpdated = stmt.executeUpdate();
                 if (rowsUpdated > 0) {

@@ -73,11 +73,11 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
     public void setAttribute(String name, List<String> values) {
         super.setAttribute(name, values);
         if ("firstName".equals(name)) {
-            updateDatabase("firstname", values.get(0));
+            updateDatabase("firstname", values.getFirst());
         } else if ("lastName".equals(name)) {
-            updateDatabase("lastname", values.get(0));
+            updateDatabase("lastname", values.getFirst());
         } else if ("email".equals(name)) {
-            updateDatabase("email", values.get(0));
+            updateDatabase("email", values.getFirst());
         }
     }
 
@@ -91,27 +91,4 @@ public class UserAdapter extends AbstractUserAdapterFederatedStorage {
             e.printStackTrace();
         }
     }
-
-//    private void updateDatabase(String field, String value) {
-//        List<String> validFields = Arrays.asList("name", "email", "phone");
-//        if (!validFields.contains(field)) {
-//            throw new IllegalArgumentException("Invalid field: " + field);
-//        }
-//
-//        String query = "UPDATE users SET " + field + " = ? WHERE id = ?";
-//        try (PreparedStatement stmt = connection.prepareStatement(query)) {
-//            stmt.setString(1, value);
-//            stmt.setLong(2, Long.parseLong(StorageId.externalId(getId())));
-//            int rowsUpdated = stmt.executeUpdate();
-//
-//            if (rowsUpdated > 0) {
-//                System.out.println("Update successful: " + rowsUpdated + " rows updated.");
-//            } else {
-//                System.out.println("No rows were updated.");
-//            }
-//        } catch (SQLException e) {
-//            e.printStackTrace();
-//            throw new RuntimeException("Database update failed", e);
-//        }
-//    }
 }
