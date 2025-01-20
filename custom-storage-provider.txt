@@ -1,0 +1,9 @@
+tạo file jar và dockerfile ngang hành rồi run bằng lệnh 
+
+- docker build -t custom-keycloak:latest .
+
+sau khi chạy xong sẽ có 1 image mới được tạo ra tên là custom-keycloak:latest
+kế đến chạy
+
+- docker run -p 8090:8080 --name custom-keycloak -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin custom-keycloak:latest start-dev --log-level=DEBUG
+- docker run -it --entrypoint /bin/bash -p 8090:8080 -e KEYCLOAK_ADMIN=admin -e KEYCLOAK_ADMIN_PASSWORD=admin custom-keycloak:latest
