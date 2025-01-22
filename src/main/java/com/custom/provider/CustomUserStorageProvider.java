@@ -212,10 +212,9 @@ public class CustomUserStorageProvider implements UserStorageProvider,
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
                 String storedPassword = rs.getString("password");
-                logger.info("storedPassword: ", storedPassword);
                 boolean isValid = passwordEncoder.matches(credentialInput.getChallengeResponse(), storedPassword);
                 logger.info("Credential validation result for user {}: {}", user.getUsername(), isValid);
-                return true;
+                return isValid;
             } else {
                 logger.warn("No password found for user: {}", user.getUsername());
             }
